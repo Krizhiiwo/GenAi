@@ -3,13 +3,12 @@ import tempfile
 import docx
 import os
 import openai
-import re
 from dotenv import load_dotenv
 from io import BytesIO
-def load_varriable():
+
+def load_variable():
     load_dotenv('.venv/key')
     return os.environ.get('OPENAI_API_KEY')
-
 
 def text_extract(file):
     doc_text = ""
@@ -25,33 +24,32 @@ def text_extract(file):
                 doc_text += para.text + "\n"
     return doc_text
 
-
 def main():
-    
-    openai_api_key=load_varriable()
+    openai_api_key = load_variable()
     st.title("Doc Text Extractor")
 
-    uploaded_file = st.file_uploader("Upload a Doc file", type=["docx"])
+    uploaded_file = st.file_uploader("Upload a DOCX file", type=["docx"])
 
     if uploaded_file is not None:
         doc_contents = text_extract(uploaded_file)
         st.header("DOCX Contents:")
         st.text(doc_contents)
-    
+
         if openai_api_key:
+            openai.api_key = openai_api_key  # Set the OpenAI API key
             if st.button("Process with OpenAI"):
                 try:
-                    response = openai.completions.create(#openai.Completion.create
+                    response = openai.Completion.create(
                         model="gpt-3.5-turbo",
                         prompt=f"Extracted Text: {doc_contents}\n\nProvide a summary:",
                         max_tokens=150
                     )
                     st.header("OpenAI Response:")
                     st.text(response.choices[0].text.strip())
-                except Exception as e:      
+                except Exception as e:
                     st.error(f"Error using OpenAI API: {e}")
         else:
             st.error("OpenAI API key is not set")
-            
+
 if __name__ == "__main__":
     main()
